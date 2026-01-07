@@ -28,7 +28,10 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 warnings.filterwarnings("ignore", category=UserWarning)
 
 RANDOM_STATE = 42
-PLOTS_DIR = "plots"
+
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PLOTS_DIR = os.path.join(SCRIPT_DIR, "plots")
 
 
 def load_for_training(resplit_if_one_class: bool = True):
@@ -93,8 +96,9 @@ def tune_and_eval(model_name: str, pipe: Pipeline, param_grid: dict, X_train, y_
     safe_name = model_name.replace(" ", "_").replace("(", "").replace(")", "")
     metrics = utils.evaluate_model(best_model, X_test, y_test, safe_name, out_dir=PLOTS_DIR)
 
-    joblib.dump(best_model, f"{safe_name}_best.joblib")
-    print(f"Saved: {safe_name}_best.joblib")
+    model_path = os.path.join(SCRIPT_DIR, f"{safe_name}_best.joblib")
+    joblib.dump(best_model, model_path)
+    print(f"Saved: {model_path}")
     return metrics, gs.best_params_
 
 
@@ -145,7 +149,7 @@ def train_deep_learning(
     
     # Save model
     safe_name = model_name.replace(" ", "_").replace("(", "").replace(")", "")
-    model_path = f"{safe_name}_best.keras"
+    model_path = os.path.join(SCRIPT_DIR, f"{safe_name}_best.keras")
     dnn.save(model_path)
     print(f"Saved: {model_path}")
     
@@ -392,8 +396,9 @@ def main():
     display_cols = ["Model", "Type", "accuracy", "precision", "recall", "f1", "auc"]
     print(summary[display_cols].to_string(index=False))
     
-    summary.to_csv("model_results_summary.csv", index=False)
-    print("\nSaved: model_results_summary.csv")
+    summary_path = os.path.join(SCRIPT_DIR, "model_results_summary.csv")
+    summary.to_csv(summary_path, index=False)
+    print(f"\nSaved: {summary_path}")
     
     # Find best model
     best_idx = summary["f1"].idxmax()

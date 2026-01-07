@@ -11,14 +11,18 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 RANDOM_STATE = 42
 
-TRAIN_CSV = "UNSW_NB15_training-set.csv"
-TEST_CSV = "UNSW_NB15_testing-set.csv"
-TRAIN_PARQUET = os.path.join("Compressed", "UNSW_NB15_training-set.parquet")
-TEST_PARQUET = os.path.join("Compressed", "UNSW_NB15_testing-set.parquet")
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-OUT_TRAIN_CSV = "UNSW_NB15_train_preprocessed.csv"
-OUT_TEST_CSV = "UNSW_NB15_test_preprocessed.csv"
-OUT_PREPROCESSOR = "unsw_preprocessor.joblib"
+# Data files are in the same directory as this script
+TRAIN_CSV = os.path.join(SCRIPT_DIR, "UNSW_NB15_training-set.csv")
+TEST_CSV = os.path.join(SCRIPT_DIR, "UNSW_NB15_testing-set.csv")
+TRAIN_PARQUET = os.path.join(SCRIPT_DIR, "Compressed", "UNSW_NB15_training-set.parquet")
+TEST_PARQUET = os.path.join(SCRIPT_DIR, "Compressed", "UNSW_NB15_testing-set.parquet")
+
+OUT_TRAIN_CSV = os.path.join(SCRIPT_DIR, "UNSW_NB15_train_preprocessed.csv")
+OUT_TEST_CSV = os.path.join(SCRIPT_DIR, "UNSW_NB15_test_preprocessed.csv")
+OUT_PREPROCESSOR = os.path.join(SCRIPT_DIR, "unsw_preprocessor.joblib")
 
 
 def _load_unsw(train_path: str, test_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:

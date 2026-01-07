@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 import pandas as pd
 
@@ -6,25 +7,19 @@ import preprocess
 import utils
 
 
-PLOTS_DIR = "plots"
-PREP_TRAIN = "UNSW_NB15_train_preprocessed.csv"
-PREP_TEST = "UNSW_NB15_test_preprocessed.csv"
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PLOTS_DIR = os.path.join(SCRIPT_DIR, "plots")
 
 
 def main() -> None:
     utils.ensure_dir(PLOTS_DIR)
 
-    # Prefer preprocessed CSV (all numeric -> easy to plot distributions).
-    # Fallback to raw if preprocessed files don't exist yet.
-    if os.path.exists(PREP_TRAIN) and os.path.exists(PREP_TEST):
-        train_df = pd.read_csv(PREP_TRAIN)
-        test_df = pd.read_csv(PREP_TEST)
-        df = pd.concat([train_df.assign(split="train"), test_df.assign(split="test")], ignore_index=True)
-        source = "preprocessed CSV"
-    else:
-        train_df, test_df = preprocess.load_raw_data()
-        df = pd.concat([train_df.assign(split="train"), test_df.assign(split="test")], ignore_index=True)
-        source = "raw UNSW"
+    # Load raw data and combine train + test for full data understanding
+    # (consistent with main_training_pipeline.py)
+    train_df, test_df = preprocess.load_raw_data()
+    df = pd.concat([train_df, test_df], ignore_index=True)
+    source = "raw UNSW (combined train + test)"
 
     print("=" * 80)
     print("STEP 1: DATA UNDERSTANDING (UNSW-NB15)")
