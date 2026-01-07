@@ -1,3 +1,5 @@
-Model,accuracy,precision,recall,f1,auc,avg_precision,best_params
-Linear Logistic Regression,0.8816666666666667,0.7888888888888889,0.9383259911894273,0.8571428571428571,0.9368555940050313,0.8997882232496075,{'model__C': 10.0}
-FNN (MLPClassifier),0.87,0.7832699619771863,0.9074889867841409,0.8408163265306122,0.9386862089735565,0.8887854188068801,"{'model__alpha': 0.001, 'model__hidden_layer_sizes': (128, 64, 32), 'model__learning_rate_init': 0.001}"
+Model,Type,accuracy,precision,recall,f1,auc,avg_precision,best_params
+Linear Logistic Regression,Traditional ML,0.8816666666666667,0.7888888888888889,0.9383259911894273,0.8571428571428571,0.9368555940050313,0.8997882232496075,{'model__C': 10.0}
+FNN (MLPClassifier),Shallow NN,0.87,0.7832699619771863,0.9074889867841409,0.8408163265306122,0.9386862089735565,0.8887854188068801,"{'model__alpha': 0.001, 'model__hidden_layer_sizes': (128, 64, 32), 'model__learning_rate_init': 0.001}"
+Deep Neural Network (Keras),Deep Learning,0.885,0.7841726618705036,0.960352422907489,0.8633663366336634,0.9584922818910843,0.9256970233338431,"{'hidden_layers': (512, 256, 128, 64, 32), 'dropout_rate': 0.3, 'l2_reg': 0.0001, 'epochs': 50, 'batch_size': 256}"
+Residual DNN (Keras),Deep Learning,0.875,0.7773722627737226,0.9383259911894273,0.8502994011976048,0.9538035454878294,0.9176901412372598,"{'hidden_layers': (256, 128, 64), 'dropout_rate': 0.3, 'l2_reg': 0.0001, 'use_residual': True, 'epochs': 50, 'batch_size': 256}"
