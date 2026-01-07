@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
@@ -21,12 +22,23 @@ OUT_PREPROCESSOR = "unsw_preprocessor.joblib"
 
 
 def _load_unsw(train_path: str, test_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Load UNSW-NB15 train/test. Prefer parquet if possible; fallback to CSV (';' separated)."""
+    """Load UNSW-NB15 train/test. Prefer parquet if possible; fallback to CSV."""
     if train_path.lower().endswith(".parquet"):
         train_df = pd.read_parquet(train_path)
         test_df = pd.read_parquet(test_path)
         return train_df, test_df
 
+    # Try different separators (comma first, then semicolon)
+    for sep in [",", ";"]:
+        try:
+            train_df = pd.read_csv(train_path, sep=sep)
+            if train_df.shape[1] > 5:  # Valid if more than 5 columns
+                test_df = pd.read_csv(test_path, sep=sep)
+                return train_df, test_df
+        except Exception:
+            continue
+    
+    # Fallback to semicolon
     train_df = pd.read_csv(train_path, sep=";")
     test_df = pd.read_csv(test_path, sep=";")
     return train_df, test_df
@@ -71,8 +83,16 @@ def _normalize_multi_dot_numbers(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def load_raw_data() -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Load raw UNSW train/test (keeps original split)."""
+def load_raw_data(auto_resplit: bool = True) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Load raw UNSW train/test.
+    
+    Args:
+        auto_resplit: If True and train set has only 1 class, merge and stratified resplit.
+    
+    Returns:
+        train_df, test_df with both classes in train set.
+    """
     try:
         if os.path.exists(TRAIN_PARQUET) and os.path.exists(TEST_PARQUET):
             train_df, test_df = _load_unsw(TRAIN_PARQUET, TEST_PARQUET)
@@ -83,6 +103,39 @@ def load_raw_data() -> tuple[pd.DataFrame, pd.DataFrame]:
 
     train_df = _normalize_multi_dot_numbers(train_df)
     test_df = _normalize_multi_dot_numbers(test_df)
+    
+    # Check if train set has both classes
+    if auto_resplit and "label" in train_df.columns:
+        train_labels = train_df["label"].astype(int)
+        test_labels = test_df["label"].astype(int)
+        
+        # If train has only 1 class, merge and resplit
+        if train_labels.nunique() < 2:
+            print("\n" + "=" * 60)
+            print("[WARNING] Train set chỉ có 1 class!")
+            print(f"  - Train: {train_labels.value_counts().to_dict()}")
+            print(f"  - Test:  {test_labels.value_counts().to_dict()}")
+            print("=> Gộp train+test và chia lại (stratified 70/30)")
+            print("=" * 60)
+            
+            # Merge both datasets
+            all_df = pd.concat([train_df, test_df], axis=0, ignore_index=True)
+            y_all = all_df["label"].astype(int)
+            
+            # Stratified split
+            train_df, test_df = train_test_split(
+                all_df,
+                test_size=0.3,
+                random_state=RANDOM_STATE,
+                stratify=y_all,
+            )
+            train_df = train_df.reset_index(drop=True)
+            test_df = test_df.reset_index(drop=True)
+            
+            print(f"\nSau khi chia lại:")
+            print(f"  - Train: {train_df.shape[0]} rows, labels: {train_df['label'].value_counts().to_dict()}")
+            print(f"  - Test:  {test_df.shape[0]} rows, labels: {test_df['label'].value_counts().to_dict()}")
+    
     return train_df, test_df
 
 
